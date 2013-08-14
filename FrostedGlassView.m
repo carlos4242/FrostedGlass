@@ -15,7 +15,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 }
 #endif
 
-
+#define kSaturate 0
 
 #import "FrostedGlassView.h"
 #import "UIImage+WaypointsHelpers.h"
@@ -122,11 +122,19 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 
     // convolute the screen shot with a blur filter
     CIImage *original = [CIImage imageWithCGImage:cgimagein];
+#if (kSaturate)
     CIFilter *saturate = [CIFilter filterWithName:@"CIColorControls"
                                     keysAndValues:kCIInputImageKey,original,@"InputSaturation",@(2.0),@"InputContrast",@(0.2),
                           nil];
+#endif
     CIFilter *blur = [CIFilter filterWithName:@"CIGaussianBlur"
-                                keysAndValues:kCIInputImageKey,saturate.outputImage,@"InputRadius",@(_blurRadius),
+                                keysAndValues:kCIInputImageKey,
+#if (kSaturate)
+saturate.outputImage,
+#else
+Original
+#endif
+@"InputRadius",@(_blurRadius),
                       nil];
     CIImage *output = blur.outputImage;
 
