@@ -132,7 +132,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 #if (kSaturate)
 saturate.outputImage,
 #else
-Original
+original
 #endif
 @"InputRadius",@(_blurRadius),
                       nil];
