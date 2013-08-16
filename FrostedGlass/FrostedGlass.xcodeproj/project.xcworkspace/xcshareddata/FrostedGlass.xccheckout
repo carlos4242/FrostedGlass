@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>9AEEC6D6-B234-4C8C-96D3-A41ED6DA66D2</string>
+	<key>IDESourceControlProjectName</key>
+	<string>FrostedGlass</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>D1543217-BC3A-4286-8173-AAEB5683CEBF</key>
+		<string>ssh://github.com/carlos4242/FrostedGlass.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>FrostedGlass/FrostedGlass.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>D1543217-BC3A-4286-8173-AAEB5683CEBF</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://github.com/carlos4242/FrostedGlass.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>D1543217-BC3A-4286-8173-AAEB5683CEBF</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>D1543217-BC3A-4286-8173-AAEB5683CEBF</string>
+			<key>IDESourceControlWCCName</key>
+			<string>FrostedGlass</string>
+		</dict>
+	</array>
+</dict>
+</plist>

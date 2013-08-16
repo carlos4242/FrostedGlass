@@ -18,7 +18,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 #define kSaturate 0
 
 #import "FrostedGlassView.h"
-#import "UIImage+WaypointsHelpers.h"
+#import "UIImage+Helpers.h"
 
 
 #define kBorder 20.0
@@ -50,50 +50,62 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 @implementation FrostedGlassView
 
 #pragma mark - setup and teardown
+
+- (void)setup {
+    // setup view
+    self.clipsToBounds = YES;
+    
+    // setup defaults
+    _blurRadius = 5.0;
+    scale = 1.0f;
+    trueScale = [UIScreen mainScreen].scale;
+    scalingFactor = trueScale;
+    
+    // open gl es
+    _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    [EAGLContext setCurrentContext:_eaglContext];
+    
+    // core image
+    _imagecontext = [CIContext contextWithEAGLContext:_eaglContext
+                                              options:nil];
+    
+    // glkit view
+    _glView = [[GLKView alloc] initWithFrame:CGRectInset(self.bounds, -kBorder, -kBorder)
+                                     context:_eaglContext];
+    _glView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
+    _glView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    _glView.opaque = YES;
+    _glView.delegate = self;
+    [self addSubview:_glView];
+    
+    // fogging view over the top
+    //        _foggingView = [[UIView alloc] initWithFrame:self.bounds];
+    //        _foggingView.backgroundColor = [UIColor whiteColor];
+    //        _foggingView.alpha = 1;
+    //        [self addSubview:_foggingView];
+    
+    // create display link and start the timer
+    _fps = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick)];
+    _frameRate = 15;
+    _fps.frameInterval = 5;
+    [_fps addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    
+    // optimise by default, track all scroll views in the superview and only update the frame when they scroll
+    
+    [self scanViewForScrollViews:self.superview];
+}
+
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        // setup view
-        self.clipsToBounds = YES;
-
-        // setup defaults
-        _blurRadius = 2.0;
-        scale = 1.0f;
-        trueScale = [UIScreen mainScreen].scale;
-        scalingFactor = trueScale;
-        
-        // open gl es
-        _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-        [EAGLContext setCurrentContext:_eaglContext];
-
-        // core image
-        _imagecontext = [CIContext contextWithEAGLContext:_eaglContext
-                                                  options:nil];
-
-        // glkit view
-        _glView = [[GLKView alloc] initWithFrame:CGRectInset(self.bounds, -kBorder, -kBorder)
-                                         context:_eaglContext];
-        _glView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
-        _glView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-        _glView.opaque = YES;
-        _glView.delegate = self;
-        [self addSubview:_glView];
-        
-        // fogging view over the top
-//        _foggingView = [[UIView alloc] initWithFrame:self.bounds];
-//        _foggingView.backgroundColor = [UIColor whiteColor];
-//        _foggingView.alpha = 1;
-//        [self addSubview:_foggingView];
-
-        // create display link and start the timer
-        _fps = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick)];
-        _frameRate = 15;
-        _fps.frameInterval = 3;
-        [_fps addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-        
-        // optimise by default, track all scroll views in the superview and only update the frame when they scroll
-        
-        [self scanViewForScrollViews:self.superview];
+        [self setup];
+    }
+    return self;
+}
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self setup];
     }
     return self;
 }
@@ -132,7 +144,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 #if (kSaturate)
 saturate.outputImage,
 #else
-original
+original,
 #endif
 @"InputRadius",@(_blurRadius),
                       nil];
