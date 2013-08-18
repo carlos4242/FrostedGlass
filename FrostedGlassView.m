@@ -79,15 +79,15 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     [self addSubview:_glView];
     
     // fogging view over the top
-    //        _foggingView = [[UIView alloc] initWithFrame:self.bounds];
-    //        _foggingView.backgroundColor = [UIColor whiteColor];
-    //        _foggingView.alpha = 1;
-    //        [self addSubview:_foggingView];
+    _foggingView = [[UIView alloc] initWithFrame:self.bounds];
+    _foggingView.backgroundColor = [UIColor clearColor];
+    _foggingView.alpha = 1;
+    [self addSubview:_foggingView];
     
     // create display link and start the timer
     _fps = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick)];
     _frameRate = 15;
-    _fps.frameInterval = 5;
+    _fps.frameInterval = 3;
     [_fps addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     
     // optimise by default, track all scroll views in the superview and only update the frame when they scroll
