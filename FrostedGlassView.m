@@ -41,6 +41,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     NSMutableArray *_scrollViewDelegates;
     BOOL _pause;
     BOOL _oneshot;
+    BOOL _rendering;
     
     // this view provides the lit glass effect
     UIView *_foggingView;
@@ -56,8 +57,8 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     self.clipsToBounds = YES;
     
     // setup defaults
-    _blurRadius = 5.0;
-    scale = 1.0f;
+    _blurRadius = 15.0;
+    scale = 2.0f;
     trueScale = [UIScreen mainScreen].scale;
     scalingFactor = trueScale;
     
@@ -72,7 +73,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     // glkit view
     _glView = [[GLKView alloc] initWithFrame:CGRectInset(self.bounds, -kBorder, -kBorder)
                                      context:_eaglContext];
-    _glView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
+    _glView.drawableColorFormat = GLKViewDrawableColorFormatRGBA8888;
     _glView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
     _glView.opaque = YES;
     _glView.delegate = self;
@@ -87,7 +88,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     // create display link and start the timer
     _fps = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick)];
     _frameRate = 15;
-    _fps.frameInterval = 5;
+    _fps.frameInterval = 3;
     [_fps addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     
     // optimise by default, track all scroll views in the superview and only update the frame when they scroll
@@ -134,21 +135,22 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 
     // convolute the screen shot with a blur filter
     CIImage *original = [CIImage imageWithCGImage:cgimagein];
-#if (kSaturate)
-    CIFilter *saturate = [CIFilter filterWithName:@"CIColorControls"
-                                    keysAndValues:kCIInputImageKey,original,@"InputSaturation",@(2.0),@"InputContrast",@(0.2),
-                          nil];
-#endif
     CIFilter *blur = [CIFilter filterWithName:@"CIGaussianBlur"
                                 keysAndValues:kCIInputImageKey,
-#if (kSaturate)
-saturate.outputImage,
-#else
-original,
-#endif
-@"InputRadius",@(_blurRadius),
+                      original,
+                      @"InputRadius",@(_blurRadius),
                       nil];
+#if (kSaturate)
+    CIFilter *saturate = [CIFilter filterWithName:@"CIColorControls"
+                                    keysAndValues:kCIInputImageKey,
+                          blur.outputImage,
+                          @"InputSaturation",@(1.2),
+                          @"InputContrast",@(0.7),
+                          nil];
+    CIImage *output = saturate.outputImage;
+#else
     CIImage *output = blur.outputImage;
+#endif
 
     // draw the resulting image using open gl es and the glkit view
     [_imagecontext drawImage:output
@@ -174,14 +176,16 @@ original,
     _pause = NO;
 }
 -(void)updateImage {
+    _rendering = YES;
     [_glView display];
     if (_oneshot) {
         _pause = YES;
         _oneshot = NO;
     }
+    _rendering = NO;
 }
 -(void)tick {
-    if (!_pause||_oneshot) {
+    if ((!_pause||_oneshot)&&!_rendering) {
         [self updateImage];
     }
 }
