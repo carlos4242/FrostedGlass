@@ -34,7 +34,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     CGFloat scalingFactor;
     
     // display link / timer
-    CADisplayLink *_fps;
+    __weak CADisplayLink *_fps;
     
     // this is for efficient control of the frame rate
     NSMutableArray *_scrollViews;
@@ -95,7 +95,12 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     
     [self scanViewForScrollViews:self.superview];
 }
-
+-(void)didMoveToSuperview {
+    if (!self.superview) {
+        [_fps invalidate];
+        _fps = nil;
+    }
+}
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
