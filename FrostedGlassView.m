@@ -5,7 +5,9 @@
 //  Created by Carl Peto on 26/07/2013.
 //  Copyright (c) 2013 Petosoft. All rights reserved.
 //
+#ifndef kDebug
 #define kDebug DEBUG
+#endif
 #if (kDebug)
 #import <sys/time.h>
 /*for debugging only */
@@ -125,19 +127,24 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 
 #pragma mark - the main render function
 -(void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+    if (self.hidden||!CGRectIntersectsRect([[[UIApplication sharedApplication] keyWindow] convertRect:rect fromView:self],[[[UIApplication sharedApplication] keyWindow] bounds])) {
+        // view is offscreen, skip rendering
+        return;
+    }
+    
 #if (kDebug)
     // record start time
     struct timeval t,t3;
     gettimeofday(&t, NULL);
 #endif
-
+    
     // create screen shot of the contents of the views under the frosted glass
     self.hidden = YES;
     CGImageRef cgimagein = [UIImage newRoughViewImage:self.superview //_container?_container:
                                                inRect:CGRectInset(self.frame, -kBorder, -kBorder)
                                             withScale:scale fillBg:[UIColor whiteColor]];
     self.hidden = NO;
-
+    
     // convolute the screen shot with a blur filter
     CIImage *original = [CIImage imageWithCGImage:cgimagein];
     CIFilter *blur = [CIFilter filterWithName:@"CIGaussianBlur"
@@ -156,15 +163,15 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 #else
     CIImage *output = blur.outputImage;
 #endif
-
+    
     // draw the resulting image using open gl es and the glkit view
     [_imagecontext drawImage:output
                       inRect:ScaledRect(rect,scalingFactor)
                     fromRect:ScaledRect(rect,scale)];
-
+    
     // clean up
     CGImageRelease(cgimagein);
-
+    
 #if (kDebug)
     // log frame render time
     gettimeofday(&t3, NULL);
@@ -195,7 +202,9 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     }
 }
 -(void)update {
-    _oneshot = YES; // update on next frame
+    if (_pause) {
+        _oneshot = YES; // update once on next frame
+    }
 }
 -(void)layoutIfNeeded {
     [self updateImage];
@@ -223,8 +232,8 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 }
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     [self update];
-    int i = [_scrollViews indexOfObject:scrollView];
-    if (i!=NSNotFound&&i>=0&&i<[_scrollViewDelegates count]) {
+    NSUInteger i = [_scrollViews indexOfObject:scrollView];
+    if (i!=NSNotFound&&i<[_scrollViewDelegates count]) {
         [[_scrollViewDelegates objectAtIndex:i] scrollViewDidScroll:scrollView];
     }
 }
