@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Petosoft. All rights reserved.
 //
 #ifndef kDebug
-#define kDebug DEBUG
+//#define kDebug DEBUG
 #endif
 #if (kDebug)
 #import <sys/time.h>
@@ -36,7 +36,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     CGFloat scalingFactor;
     
     // display link / timer
-    __weak CADisplayLink *_fps;
+    CADisplayLink *_fps;
     
     // this is for efficient control of the frame rate
     NSMutableArray *_scrollViews;
@@ -153,7 +153,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     self.hidden = NO;
     
     // convolute the screen shot with a blur filter
-    CIImage *original = [CIImage imageWithCGImage:cgimagein];
+    CIImage *original = [CIImage imageWithCGImage:cgimagein]; // this line failing in iOS 9
     CIFilter *blur = [CIFilter filterWithName:@"CIGaussianBlur"
                                 keysAndValues:kCIInputImageKey,
                       original,
