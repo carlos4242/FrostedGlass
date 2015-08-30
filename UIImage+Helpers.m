@@ -31,7 +31,7 @@
     CGFloat squareSize = fminf(container.size.width,container.size.height);
     void *bitBuffer = malloc(squareSize*squareSize*8);
     CGColorSpaceRef greySpace = CGColorSpaceCreateDeviceGray();
-    CGContextRef maskContext = CGBitmapContextCreate(bitBuffer, squareSize, squareSize, 8, squareSize*8, greySpace, kCGImageAlphaNone);
+    CGContextRef maskContext = CGBitmapContextCreate(bitBuffer, squareSize, squareSize, 8, squareSize*8, greySpace, (CGBitmapInfo)kCGImageAlphaNone);
     CGFloat greyColors[4] = {1,1,0,1};
     CGFloat greyLocations[2] = {0,1};
     CGGradientRef circularGradient = CGGradientCreateWithColorComponents(greySpace, greyColors, greyLocations, 2);
@@ -90,7 +90,7 @@
 }
 +(CGPoint)snapshotEndCenterOnTable:(UITableView*)destinationWPTableView inViewCoordinates:(UIView*)inViewCoordinates {
     CGRect endRow = CGRectZero;
-    int currentLastRow = [destinationWPTableView.dataSource tableView:destinationWPTableView numberOfRowsInSection:0];
+    NSInteger currentLastRow = [destinationWPTableView.dataSource tableView:destinationWPTableView numberOfRowsInSection:0];
     if (currentLastRow) {
         currentLastRow--;
         endRow = [destinationWPTableView rectForRowAtIndexPath:[NSIndexPath indexPathForRow:currentLastRow inSection:0]];
