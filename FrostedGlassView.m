@@ -87,18 +87,25 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     _foggingView.alpha = 0.8;
     [self addSubview:_foggingView];
     
-    // create display link and start the timer
-    _fps = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick)];
-    _frameRate = 15;
-    _fps.frameInterval = 3;
-    [_fps addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [self setupDisplayLink];
     
     // optimise by default, track all scroll views in the superview and only update the frame when they scroll
     
     [self scanViewForScrollViews:self.superview];
 }
+-(void)setupDisplayLink {
+    // create display link and start the timer
+    _fps = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick)];
+    _frameRate = 15;
+    _fps.frameInterval = 3;
+    [_fps addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+}
 -(void)didMoveToSuperview {
-    if (!self.superview) {
+    if (self.superview) {
+        if (!_fps) {
+            [self setupDisplayLink];
+        }
+    } else {
         [_fps invalidate];
         _fps = nil;
     }
