@@ -22,7 +22,7 @@
     
     _frostedGlass.blurRadius = 3.5;
     _frostedGlass.lightColor = [UIColor whiteColor];
-    _frostedGlass.lightStrength = 0.4;
+//    _frostedGlass.lightStrength = 0.4;
     
     _demoLabel.textColor = [UIColor whiteColor];
     _demoLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];

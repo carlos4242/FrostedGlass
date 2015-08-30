@@ -5,9 +5,13 @@
 //  Created by Carl Peto on 26/07/2013.
 //  Copyright (c) 2013 Petosoft. All rights reserved.
 //
+
+#if !TARGET_IPHONE_SIMULATOR
 #ifndef kDebug
 //#define kDebug DEBUG
 #endif
+#endif
+
 #if (kDebug)
 #import <sys/time.h>
 /*for debugging only */
@@ -27,16 +31,20 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 #define ScaledRect(rect,scale) CGRectMake((rect).origin.x*scale,(rect).origin.y*scale,(rect).size.width*scale,(rect).size.height*scale)
 
 @interface FrostedGlassView () <UIScrollViewDelegate> {
+#if !TARGET_IPHONE_SIMULATOR
     // open gl es / glkit
     GLKView *_glView;
     CIContext *_imagecontext;
     EAGLContext *_eaglContext;
+    
+    // display link / timer
+    CADisplayLink *_fps;
+#endif
+
     CGFloat scale;
     CGFloat trueScale;
     CGFloat scalingFactor;
     
-    // display link / timer
-    CADisplayLink *_fps;
     
     // this is for efficient control of the frame rate
     NSMutableArray *_scrollViews;
@@ -64,6 +72,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     trueScale = [UIScreen mainScreen].scale;
     scalingFactor = trueScale;
     
+#if !TARGET_IPHONE_SIMULATOR
     // open gl es
     _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     [EAGLContext setCurrentContext:_eaglContext];
@@ -81,18 +90,23 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     _glView.delegate = self;
     [self addSubview:_glView];
     
+    [self setupDisplayLink];
+#endif
+    
     // fogging view over the top
     _foggingView = [[UIView alloc] initWithFrame:self.bounds];
     _foggingView.backgroundColor = [UIColor whiteColor];
-    _foggingView.alpha = 0.8;
+#if TARGET_IPHONE_SIMULATOR
+    _foggingView.alpha = 0.95;
+#else
+    _foggingView.alpha = 0.4;
+#endif
     [self addSubview:_foggingView];
     
-    [self setupDisplayLink];
-    
     // optimise by default, track all scroll views in the superview and only update the frame when they scroll
-    
     [self scanViewForScrollViews:self.superview];
 }
+#if !TARGET_IPHONE_SIMULATOR
 -(void)setupDisplayLink {
     // create display link and start the timer
     _fps = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick)];
@@ -110,6 +124,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
         _fps = nil;
     }
 }
+#endif
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
@@ -125,13 +140,16 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     return self;
 }
 -(void)dealloc {
+#if !TARGET_IPHONE_SIMULATOR
     // cleanup timer and restore scroll view delegates
     [_fps invalidate];
+#endif
     for (int i=0;i<[_scrollViews count];i++) {
         ((UIScrollView*)[_scrollViews objectAtIndex:i]).delegate = [_scrollViewDelegates objectAtIndex:i];
     }
 }
 
+#if !TARGET_IPHONE_SIMULATOR
 #pragma mark - the main render function
 -(void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
     if (self.hidden||!CGRectIntersectsRect([[[UIApplication sharedApplication] keyWindow] convertRect:rect fromView:self],[[[UIApplication sharedApplication] keyWindow] bounds])) {
@@ -185,7 +203,7 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
     logTtoT2(&t, &t3);
 #endif
 }
-
+#endif
 
 #pragma mark - this section mostly concerns running the frame rate efficiently
 -(void)pause {
@@ -196,7 +214,9 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 }
 -(void)updateImage {
     _rendering = YES;
+#if !TARGET_IPHONE_SIMULATOR
     [_glView display];
+#endif
     if (_oneshot) {
         _pause = YES;
         _oneshot = NO;
@@ -252,7 +272,9 @@ void logTtoT2(struct timeval *t,struct timeval *t2) {
 -(void)setFrameRate:(int)frameRate {
     if (frameRate>=1&&frameRate<=60) {
         _frameRate = frameRate;
+#if !TARGET_IPHONE_SIMULATOR
         _fps.frameInterval = 60/frameRate;
+#endif
     }
 }
 -(UIColor*)lightColor {
